@@ -1,5 +1,6 @@
 package com.scrumboard.app.task;
 
+import com.scrumboard.app.user.ApplicationUser;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -19,6 +20,10 @@ public class Task {
     @Enumerated(EnumType.ORDINAL)
     private Status status;
 
+    @ManyToOne
+    @JoinColumn(name="user_id", nullable=false, updatable=false)
+    private ApplicationUser createdBy;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(updatable=false)
@@ -31,13 +36,14 @@ public class Task {
     public Task() {
     }
 
-    public Task(Long id, String title, String description, Status status, Date createdAt, Date updatedAt) {
+    public Task(Long id, String title, String description, Status status, Date createdAt, Date updatedAt, ApplicationUser createdBy) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.createdBy = createdBy;
     }
 
     public Long getId() {
@@ -86,6 +92,14 @@ public class Task {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public ApplicationUser getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(ApplicationUser createdBy) {
+        this.createdBy = createdBy;
     }
 
 }

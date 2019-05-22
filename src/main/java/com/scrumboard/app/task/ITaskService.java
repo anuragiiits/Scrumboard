@@ -1,14 +1,14 @@
 package com.scrumboard.app.task;
 
 import com.scrumboard.app.task.pojo.response.CreateTaskResponse;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ITaskService {
-    CreateTaskResponse addTask(Task task);
-    void updateTask(Task task);
-    void deleteTask(Long id);
-    Optional<Task> getTask(Long id);
-    List<Task> getAllTasks();
+    Task addTask(Long userId, Task task);
+    Task updateTask(Long userId, Task task);
+    void deleteTask(Long userId, Long id);
+    Task getTask(Long userId, Long id);
+    List<Task> getTaskByUserId(Long userId);
 }
