@@ -6,9 +6,9 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface ITaskService {
-    Task addTask(Long userId, Task task);
-    Task updateTask(Long userId, Task task);
-    void deleteTask(Long userId, Long id);
-    Task getTask(Long userId, Long id);
-    List<Task> getTaskByUserId(Long userId);
+    Task addTask(Task task);
+    Task updateTask(Task task);
+    void deleteTask(Long id);
+    Task getTask(Long id);
+    List<Task> getUserTask();
 }

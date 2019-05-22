@@ -10,6 +10,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 import static java.util.Collections.emptyList;
 
 @Service
@@ -20,8 +22,8 @@ public class ApplicationUserService implements IApplicationUserService, UserDeta
 
     public ResponseEntity<String> addUser(ApplicationUser user) {
 
-        ApplicationUser existingUser = applicationUserRepository.findByUsername(user.getUsername());
-        if(existingUser != null) {
+        Optional<ApplicationUser> existingUser = applicationUserRepository.findByUsername(user.getUsername());
+        if(existingUser.isPresent()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
@@ -31,10 +33,10 @@ public class ApplicationUserService implements IApplicationUserService, UserDeta
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        ApplicationUser applicationUser = applicationUserRepository.findByUsername(username);
-        if (applicationUser == null) {
+        Optional<ApplicationUser> applicationUser = applicationUserRepository.findByUsername(username);
+        if (!applicationUser.isPresent()) {
             throw new UsernameNotFoundException(username);
         }
-        return new User(applicationUser.getUsername(), applicationUser.getPassword(), emptyList());
+        return new User(applicationUser.get().getUsername(), applicationUser.get().getPassword(), emptyList());
     }
 }

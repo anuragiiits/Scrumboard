@@ -19,37 +19,37 @@ public class TaskController {
     @Autowired
     private ITaskService taskService;
 
-    @GetMapping("{userId}/tasks")
-    public List<Task> getAllTasks(@PathVariable Long userId){
-        return taskService.getTaskByUserId(userId);
+    @GetMapping("/tasks")
+    public List<Task> getAllTasks(){
+        return taskService.getUserTask();
     }
 
-    @GetMapping("{userId}/tasks/{id}")
-    public Task getTask(@PathVariable Long userId, @PathVariable Long id){
-        return taskService.getTask(userId, id);
+    @GetMapping("/tasks/{id}")
+    public Task getTask(@PathVariable Long id){
+        return taskService.getTask(id);
     }
 
-    @PostMapping("{userId}/tasks")
-    public ResponseEntity<Task> addTask(@PathVariable Long userId, @RequestBody Task task){
+    @PostMapping("/tasks")
+    public ResponseEntity<Task> addTask(@RequestBody Task task){
 
         if(Strings.isEmpty(task.getTitle()) && Strings.isEmpty(task.getDescription())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(taskService.addTask(userId, task));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(taskService.addTask(task));
     }
 
-    @PutMapping("{userId}/tasks")
-    public ResponseEntity<Task> updateTask(@PathVariable Long userId, @RequestBody Task task){
+    @PutMapping("/tasks")
+    public ResponseEntity<Task> updateTask(@RequestBody Task task){
 
         if(Strings.isEmpty(task.getTitle()) && Strings.isEmpty(task.getDescription()))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(taskService.updateTask(userId, task));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(taskService.updateTask(task));
     }
 
-    @DeleteMapping("{userId}/tasks/{id}")
-    public void deleteTask(@PathVariable Long userId, @PathVariable Long id){
-        taskService.deleteTask(userId, id);
+    @DeleteMapping("/tasks/{id}")
+    public void deleteTask(@PathVariable Long id){
+        taskService.deleteTask(id);
     }
 }

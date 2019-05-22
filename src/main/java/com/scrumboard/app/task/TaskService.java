@@ -7,6 +7,8 @@ import com.scrumboard.app.user.ApplicationUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,33 +25,37 @@ public class TaskService implements ITaskService {
 
     private Logger logger = LoggerFactory.getLogger(TaskService.class);
 
-    public List<Task> getTaskByUserId(Long userId) {
+    public List<Task> getUserTask() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         List<Task> tasks = new ArrayList<>();
-        taskRepository.findByCreatedById(userId).forEach(tasks::add);
+        taskRepository.findByCreatedByUsername(auth.getName()).forEach(tasks::add);
         return tasks;
     }
 
-    public Task getTask(Long userId, Long id) {
+    public Task getTask(Long id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("TaskId " + id + " not found"));
-        Optional<ApplicationUser> user = applicationUserRepository.findById(userId);
-        if(user.isPresent() && (user.get().getId() == task.getCreatedBy().getId())){
+        Optional<ApplicationUser> user = applicationUserRepository.findByUsername(auth.getName());
+        if(user.isPresent() && (user.get().getId().equals(task.getCreatedBy().getId()))){
             return task;
         }
         else throw new AccessDeniedException("User is not allowed");
     }
 
-    public Task addTask(Long userId, Task task) {
+    public Task addTask(Task task) {
 //        task = taskRepository.save(task);
 //        CreateTaskResponse createTaskResponse = new CreateTaskResponse();
 //        createTaskResponse.setId(task.getId());
 
-        return applicationUserRepository.findById(userId).map(user -> {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        return applicationUserRepository.findByUsername(auth.getName()).map(user -> {
             task.setCreatedBy(user);
             return taskRepository.save(task);
-        }).orElseThrow(() -> new ResourceNotFoundException("UserId " + userId + " not found"));
+        }).orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
-    public Task updateTask(Long userId, Task task) {
+    public Task updateTask(Task task) {
 
 //        To-DO: Handle this in a better way
 //        Task originalTask = taskRepository.findById(task.getId()).orElseThrow(() -> new ResourceNotFoundException("TaskId " + task.getId() + " not found"));
@@ -61,9 +67,10 @@ public class TaskService implements ITaskService {
 //        }
 //        else throw new AccessDeniedException("User is not allowed");
 
-        Optional<ApplicationUser> user = applicationUserRepository.findById(userId);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Optional<ApplicationUser> user = applicationUserRepository.findByUsername(auth.getName());
         return taskRepository.findById(task.getId()).map(originalTask -> {
-            if(user.isPresent() && (user.get().getId() == originalTask.getCreatedBy().getId())){
+            if(user.isPresent() && (user.get().getId().equals(originalTask.getCreatedBy().getId()))){
                 originalTask.setTitle(task.getTitle());
                 originalTask.setDescription(task.getDescription());
                 originalTask.setStatus(task.getStatus());
@@ -73,8 +80,8 @@ public class TaskService implements ITaskService {
         }).orElseThrow(() -> new ResourceNotFoundException("TaskId " + task.getId() + " not found"));
     }
 
-    public void deleteTask(Long userId, Long id) {
-        Task task = getTask(userId, id);
+    public void deleteTask(Long id) {
+        Task task = getTask(id);
         taskRepository.delete(task);
     }
 }
