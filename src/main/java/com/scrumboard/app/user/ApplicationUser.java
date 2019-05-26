@@ -26,6 +26,11 @@ public class ApplicationUser {
     public ApplicationUser() {
     }
 
+    public ApplicationUser(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
     public ApplicationUser(Long id, String username, String password) {
         this.id = id;
         this.username = username;

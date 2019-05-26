@@ -2,8 +2,11 @@ package com.scrumboard.app.task;
 
 import com.scrumboard.app.exception.AccessDeniedException;
 import com.scrumboard.app.exception.ResourceNotFoundException;
+import com.scrumboard.app.task.pojo.request.TaskRequest;
+import com.scrumboard.app.task.pojo.response.TaskResponse;
 import com.scrumboard.app.user.ApplicationUser;
 import com.scrumboard.app.user.ApplicationUserRepository;
+import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,65 +25,67 @@ public class TaskService implements ITaskService {
     private TaskRepository taskRepository;
     @Autowired
     private ApplicationUserRepository applicationUserRepository;
+    @Autowired
+    private Mapper mapper;
 
     private Logger logger = LoggerFactory.getLogger(TaskService.class);
 
-    public List<Task> getUserTask() {
+    public List<TaskResponse> getUserTask() {
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        List<Task> tasks = new ArrayList<>();
-        taskRepository.findByCreatedByUsername(auth.getName()).forEach(tasks::add);
-        return tasks;
+        List<TaskResponse> tasksResponse = new ArrayList<>();
+        taskRepository.findByCreatedByUsername(auth.getName())
+                .forEach((task) -> tasksResponse.add(mapper.map(task, TaskResponse.class)));
+
+        return tasksResponse;
     }
 
     public Task getTask(Long id) {
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("TaskId " + id + " not found"));
         Optional<ApplicationUser> user = applicationUserRepository.findByUsername(auth.getName());
+
         if(user.isPresent() && (user.get().getId().equals(task.getCreatedBy().getId()))){
             return task;
         }
         else throw new AccessDeniedException("User is not allowed");
     }
 
-    public Task addTask(Task task) {
-//        task = taskRepository.save(task);
-//        CreateTaskResponse createTaskResponse = new CreateTaskResponse();
-//        createTaskResponse.setId(task.getId());
+    public TaskResponse addTask(TaskRequest taskRequest) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         return applicationUserRepository.findByUsername(auth.getName()).map(user -> {
+            Task task = new Task(taskRequest.getTitle(), taskRequest.getDescription(), taskRequest.getStatus());
             task.setCreatedBy(user);
-            return taskRepository.save(task);
+            task = taskRepository.save(task);
+
+            return  mapper.map(task, TaskResponse.class);
         }).orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
-    public Task updateTask(Task task) {
-
-//        To-DO: Handle this in a better way
-//        Task originalTask = taskRepository.findById(task.getId()).orElseThrow(() -> new ResourceNotFoundException("TaskId " + task.getId() + " not found"));
-//        Optional<User> user = userRepository.findById(userId);
-//        if(user.isPresent() && (user.get().getId() == originalTask.getCreatedBy().getId())){
-//            logger.info("{}",task.toString());
-//            logger.info("{}",originalTask.toString());
-//            return taskRepository.save(task);
-//        }
-//        else throw new AccessDeniedException("User is not allowed");
+    public TaskResponse updateTask(Long taskId, TaskRequest taskRequest) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Optional<ApplicationUser> user = applicationUserRepository.findByUsername(auth.getName());
-        return taskRepository.findById(task.getId()).map(originalTask -> {
+
+        return taskRepository.findById(taskId).map(originalTask -> {
             if(user.isPresent() && (user.get().getId().equals(originalTask.getCreatedBy().getId()))){
-                originalTask.setTitle(task.getTitle());
-                originalTask.setDescription(task.getDescription());
-                originalTask.setStatus(task.getStatus());
-                return taskRepository.save(originalTask);
+                originalTask.setTitle(taskRequest.getTitle());
+                originalTask.setDescription(taskRequest.getDescription());
+                originalTask.setStatus(taskRequest.getStatus());
+
+                originalTask = taskRepository.save(originalTask);
+
+                return mapper.map(originalTask, TaskResponse.class);
             }
             else throw new AccessDeniedException("User is not allowed");
-        }).orElseThrow(() -> new ResourceNotFoundException("TaskId " + task.getId() + " not found"));
+        }).orElseThrow(() -> new ResourceNotFoundException("TaskId " + taskId + " not found"));
     }
 
     public void deleteTask(Long id) {
+
         Task task = getTask(id);
         taskRepository.delete(task);
     }
