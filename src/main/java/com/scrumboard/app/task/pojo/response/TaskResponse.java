@@ -1,56 +1,30 @@
-package com.scrumboard.app.task;
+package com.scrumboard.app.task.pojo.response;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.scrumboard.app.user.ApplicationUser;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import com.scrumboard.app.task.Status;
+import com.scrumboard.app.task.Task;
 
-import javax.persistence.*;
 import java.util.Date;
 
-@Entity
-public class Task {
+public class TaskResponse {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String title;
     private String description;
-
-    @Enumerated(EnumType.ORDINAL)
     private Status status;
-
-    @ManyToOne
-    @JoinColumn(name="user_id", nullable=false, updatable=false)
-    private ApplicationUser createdBy;
-
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(updatable=false)
     private Date createdAt;
-
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-    public Task() {
+    public TaskResponse(){
+
     }
 
-    public Task(String title, String description, Status status) {
-        this.title = title;
-        this.description = description;
-        this.status = status;
-    }
-
-    public Task(Long id, String title, String description, Status status, Date createdAt, Date updatedAt, ApplicationUser createdBy) {
+    public TaskResponse(Long id, String title, String description, Status status, Date createdAt, Date updatedAt) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.createdBy = createdBy;
     }
 
     public Long getId() {
@@ -100,13 +74,4 @@ public class Task {
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
-
-    public ApplicationUser getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(ApplicationUser createdBy) {
-        this.createdBy = createdBy;
-    }
-
 }

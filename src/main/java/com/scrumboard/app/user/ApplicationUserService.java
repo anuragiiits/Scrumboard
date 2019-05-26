@@ -28,15 +28,18 @@ public class ApplicationUserService implements IApplicationUserService, UserDeta
         }
 
         applicationUserRepository.save(user);
+
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
         Optional<ApplicationUser> applicationUser = applicationUserRepository.findByUsername(username);
         if (!applicationUser.isPresent()) {
             throw new UsernameNotFoundException(username);
         }
+
         return new User(applicationUser.get().getUsername(), applicationUser.get().getPassword(), emptyList());
     }
 }
