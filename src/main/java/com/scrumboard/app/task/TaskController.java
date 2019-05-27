@@ -14,6 +14,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/user")
 @Transactional(rollbackOn = Exception.class)
 public class TaskController {

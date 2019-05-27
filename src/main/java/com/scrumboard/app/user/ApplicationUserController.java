@@ -10,6 +10,7 @@ import javax.transaction.Transactional;
 import java.util.Base64;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/users")
 @Transactional(rollbackOn = Exception.class)
 public class ApplicationUserController {
