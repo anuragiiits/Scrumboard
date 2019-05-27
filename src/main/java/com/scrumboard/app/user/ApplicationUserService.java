@@ -29,7 +29,7 @@ public class ApplicationUserService implements IApplicationUserService, UserDeta
 
         applicationUserRepository.save(user);
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @Override

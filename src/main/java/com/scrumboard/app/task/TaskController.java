@@ -14,6 +14,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/user")
 @Transactional(rollbackOn = Exception.class)
 public class TaskController {
@@ -40,7 +41,7 @@ public class TaskController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(taskService.addTask(taskRequest));
+        return ResponseEntity.status(HttpStatus.OK).body(taskService.addTask(taskRequest));
     }
 
     @PutMapping("/tasks/{id}")
@@ -49,7 +50,7 @@ public class TaskController {
         if(Strings.isEmpty(taskRequest.getTitle()) && Strings.isEmpty(taskRequest.getDescription()))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(taskService.updateTask(taskId, taskRequest));
+        return ResponseEntity.status(HttpStatus.OK).body(taskService.updateTask(taskId, taskRequest));
     }
 
     @DeleteMapping("/tasks/{id}")
