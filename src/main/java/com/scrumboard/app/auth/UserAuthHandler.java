@@ -4,12 +4,13 @@ import com.scrumboard.app.session.Session;
 import com.scrumboard.app.session.SessionRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.Optional;
 
-@Component
+@Service
 public class UserAuthHandler {
 
     SessionRepository sessionRepository;
@@ -24,7 +25,10 @@ public class UserAuthHandler {
             return false;
         }
         Optional<Session> session = sessionRepository.findByToken(accessToken);
-        return session.filter(value -> !value.getExpiryDate().before(new Date())).isPresent();
-
+        if(session.filter(value -> !value.getExpiryDate().before(new Date())).isPresent()){
+            request.setAttribute("username", session.get().getCreatedBy().getUsername());
+            return true;
+        }
+        return false;
     }
 }
