@@ -1,36 +1,38 @@
 package com.scrumboard.app.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.scrumboard.app.user.ApplicationUser;
 import com.scrumboard.app.user.request.SignupRequest;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.scrumboard.app.session.ISessionService;
+import com.scrumboard.app.session.Session;
+import com.scrumboard.app.user.IApplicationUserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Date;
+import java.util.UUID;
 
 import static com.scrumboard.app.auth.SecurityConstants.*;
 
-public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-
+public class SessionAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private AuthenticationManager authenticationManager;
+    private ISessionService sessionService;
+    private IApplicationUserService applicationUserService;
 
-    public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
+    public SessionAuthenticationFilter(AuthenticationManager authenticationManager, ISessionService sessionService, IApplicationUserService applicationUserService) {
         this.authenticationManager = authenticationManager;
+        this.sessionService = sessionService;
+        this.applicationUserService = applicationUserService;
     }
 
     @Override
@@ -50,21 +52,27 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                             credentials[1],
                             new ArrayList<>())
             );
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
+    @Transactional
     protected void successfulAuthentication(HttpServletRequest req,
                                             HttpServletResponse res,
                                             FilterChain chain,
                                             Authentication auth) throws IOException, ServletException {
-        String token = Jwts.builder()
-                .setSubject(((User) auth.getPrincipal()).getUsername())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS512, SECRET)
-                .compact();
-        res.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
+
+        String token = UUID.randomUUID().toString();
+        Session session = new Session();
+        session.setToken(token);
+        session.setStatus(true);
+        session.setCreatedBy(applicationUserService.findByUsername((String)(((User) auth.getPrincipal()).getUsername())).get());       //TODO: Check for the getUsername()
+        session.setExpiryDate();
+        sessionService.createSession(session);
+
+        res.addHeader(HEADER_STRING, token);
     }
 }

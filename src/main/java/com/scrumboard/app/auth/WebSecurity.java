@@ -1,5 +1,8 @@
 package com.scrumboard.app.auth;
 
+import com.scrumboard.app.session.ISessionService;
+import com.scrumboard.app.user.IApplicationUserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +19,12 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
     private UserDetailsService userDetailsService;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    private UserAuthHandler userAuthHandler;
+    @Autowired
+    private ISessionService sessionService;
+    @Autowired
+    private IApplicationUserService applicationUserService;
 
     public WebSecurity(UserDetailsService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userDetailsService = userDetailsService;
@@ -24,13 +33,14 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
         http.csrf().disable().authorizeRequests()
                 .antMatchers(HttpMethod.POST, SIGN_UP_URL).permitAll()
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
-                .addFilter(new JWTAuthorizationFilter(authenticationManager()))
+                .addFilter(new SessionAuthenticationFilter(authenticationManager(), sessionService, applicationUserService))
+                .addFilter(new SessionAuthorizationFilter(authenticationManager(), userAuthHandler))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 
