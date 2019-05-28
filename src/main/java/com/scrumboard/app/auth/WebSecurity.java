@@ -1,14 +1,18 @@
 package com.scrumboard.app.auth;
 
+import com.scrumboard.app.session.ISessionService;
+import com.scrumboard.app.session.SessionService;
+import com.scrumboard.app.user.ApplicationUserService;
+import com.scrumboard.app.user.IApplicationUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import static com.scrumboard.app.auth.SecurityConstants.SIGN_UP_URL;
 
@@ -18,6 +22,10 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     private UserAuthHandler userAuthHandler;
+    @Autowired
+    private ISessionService sessionService;
+    @Autowired
+    private IApplicationUserService applicationUserService;
 
     public WebSecurity(UserDetailsService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userDetailsService = userDetailsService;
@@ -26,13 +34,15 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
         http.csrf().disable().authorizeRequests()
                 .antMatchers(HttpMethod.POST, SIGN_UP_URL).permitAll()
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
-                .addFilter(new SessionAuthorizationFilter(authenticationManager(), userAuthHandler));
+                .addFilter(new SessionAuthenticationFilter(authenticationManager(), sessionService, applicationUserService))
+                .addFilter(new SessionAuthorizationFilter(authenticationManager(), userAuthHandler))
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 
     @Override

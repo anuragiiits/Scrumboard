@@ -1,9 +1,10 @@
 package com.scrumboard.app.auth;
 
+import com.scrumboard.app.session.ISessionService;
 import com.scrumboard.app.session.Session;
-import com.scrumboard.app.session.SessionRepository;
+import com.scrumboard.app.session.SessionService;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,10 +14,11 @@ import java.util.Optional;
 @Service
 public class UserAuthHandler {
 
-    SessionRepository sessionRepository;
+    @Autowired
+    ISessionService sessionService;
 
-    public UserAuthHandler(SessionRepository sessionRepository)  {
-        this.sessionRepository = sessionRepository;
+    public UserAuthHandler(SessionService sessionService)  {
+        this.sessionService = sessionService;
     }
 
     public Boolean authenticateRequest(HttpServletRequest request) {
@@ -24,8 +26,8 @@ public class UserAuthHandler {
         if(Strings.isEmpty(accessToken)) {
             return false;
         }
-        Optional<Session> session = sessionRepository.findByToken(accessToken);
-        if(session.filter(value -> !value.getExpiryDate().before(new Date())).isPresent()){
+        Optional<Session> session = sessionService.findByToken(accessToken);
+        if(session.filter(value -> value.getStatus() && !value.getExpiryDate().before(new Date())).isPresent()){
             request.setAttribute("username", session.get().getCreatedBy().getUsername());
             return true;
         }

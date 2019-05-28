@@ -10,7 +10,7 @@ import javax.transaction.Transactional;
 import java.util.Base64;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/user")
 @Transactional(rollbackOn = Exception.class)
 public class ApplicationUserController {
 
@@ -18,7 +18,6 @@ public class ApplicationUserController {
     private IApplicationUserService userService;
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
-
 
     @PostMapping("/sign-up")
     public ResponseEntity<String> signUp(@RequestBody SignupRequest signupRequest) {
@@ -34,5 +33,10 @@ public class ApplicationUserController {
         applicationUser.setPassword(bCryptPasswordEncoder.encode(password));
 
         return userService.addUser(applicationUser);
+    }
+
+    @GetMapping("logout")
+    public ResponseEntity<String> logout(){
+        return userService.logout();
     }
 }

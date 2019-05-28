@@ -1,6 +1,5 @@
 package com.scrumboard.app.task;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.scrumboard.app.user.ApplicationUser;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;

@@ -3,6 +3,7 @@ package com.scrumboard.app.session;
 import com.scrumboard.app.user.ApplicationUser;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -70,7 +71,7 @@ public class Session {
         return expiryDate;
     }
 
-    public void setExpiryDate(Date expiryDate) {
-        this.expiryDate = expiryDate;
+    public void setExpiryDate() {
+        this.expiryDate = java.sql.Date.valueOf(LocalDate.now().plusDays(10));
     }
 }
