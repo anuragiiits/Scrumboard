@@ -1,7 +1,7 @@
 package com.scrumboard.app.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.scrumboard.app.user.request.SignupRequest;
+import com.scrumboard.app.user.pojo.request.SignupRequest;
 import com.scrumboard.app.session.ISessionService;
 import com.scrumboard.app.session.Session;
 import com.scrumboard.app.user.IApplicationUserService;

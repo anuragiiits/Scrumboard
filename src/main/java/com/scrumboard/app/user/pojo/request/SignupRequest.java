@@ -1,4 +1,4 @@
-package com.scrumboard.app.user.request;
+package com.scrumboard.app.user.pojo.request;
 
 public class SignupRequest {
 

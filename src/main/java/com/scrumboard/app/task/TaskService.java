@@ -2,8 +2,10 @@ package com.scrumboard.app.task;
 
 import com.scrumboard.app.exception.AccessDeniedException;
 import com.scrumboard.app.exception.ResourceNotFoundException;
+import com.scrumboard.app.task.pojo.request.TaskFilterRequest;
 import com.scrumboard.app.task.pojo.request.TaskRequest;
 import com.scrumboard.app.task.pojo.response.TaskResponse;
+import com.scrumboard.app.task.pojo.response.TaskStatusResponse;
 import com.scrumboard.app.user.ApplicationUser;
 import com.scrumboard.app.user.ApplicationUserRepository;
 import org.dozer.Mapper;
@@ -38,6 +40,47 @@ public class TaskService implements ITaskService {
                 .forEach((task) -> tasksResponse.add(mapper.map(task, TaskResponse.class)));
 
         return tasksResponse;
+    }
+
+    public TaskStatusResponse getUserStatusTask(){
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        TaskStatusResponse taskStatusResponse = new TaskStatusResponse();
+        taskRepository.findByCreatedByUsername(auth.getName())
+                .forEach((task) -> {
+                    if(task.getStatus() == Status.PENDING)
+                        taskStatusResponse.addPendingTask(mapper.map(task, TaskResponse.class));
+                    if(task.getStatus() == Status.DEVELOPMENT)
+                        taskStatusResponse.addDevelopmentTask(mapper.map(task, TaskResponse.class));
+                    if(task.getStatus() == Status.TESTING)
+                        taskStatusResponse.addTestingTask(mapper.map(task, TaskResponse.class));
+                    if(task.getStatus() == Status.PRODUCTION)
+                        taskStatusResponse.addProductionTask(mapper.map(task, TaskResponse.class));
+                    if(task.getStatus() == Status.REJECTED)
+                        taskStatusResponse.addRejectedTask(mapper.map(task, TaskResponse.class));
+                });
+        return taskStatusResponse;
+    }
+
+    public TaskStatusResponse getFilteredUserTask(TaskFilterRequest taskFilterRequest) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        TaskStatusResponse taskStatusResponse = new TaskStatusResponse();
+        taskRepository.findByCreatedByUsernameAndStatusIn(auth.getName(), taskFilterRequest.getStatusTaskFilter())
+                .forEach(task -> {
+                    if(task.getStatus() == Status.PENDING)
+                        taskStatusResponse.addPendingTask(mapper.map(task, TaskResponse.class));
+                    if(task.getStatus() == Status.DEVELOPMENT)
+                        taskStatusResponse.addDevelopmentTask(mapper.map(task, TaskResponse.class));
+                    if(task.getStatus() == Status.TESTING)
+                        taskStatusResponse.addTestingTask(mapper.map(task, TaskResponse.class));
+                    if(task.getStatus() == Status.PRODUCTION)
+                        taskStatusResponse.addProductionTask(mapper.map(task, TaskResponse.class));
+                    if(task.getStatus() == Status.REJECTED)
+                        taskStatusResponse.addRejectedTask(mapper.map(task, TaskResponse.class));
+                });
+
+        return taskStatusResponse;
     }
 
     public Task getTask(Long id) {

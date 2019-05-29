@@ -1,6 +1,6 @@
 package com.scrumboard.app.user;
 
-import com.scrumboard.app.user.request.SignupRequest;
+import com.scrumboard.app.user.pojo.request.SignupRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

@@ -20,6 +20,13 @@ public class Task {
     @Enumerated(EnumType.ORDINAL)
     private Status status;
 
+    /**
+     * TODO: Add a source field
+
+        @Enumerated(EnumType.ORDINAL)
+        private RequestSource source;
+     */
+
     @ManyToOne
     @JoinColumn(name="user_id", nullable=false, updatable=false)
     private ApplicationUser createdBy;

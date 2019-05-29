@@ -1,7 +1,6 @@
 package com.scrumboard.app.task.pojo.response;
 
 import com.scrumboard.app.task.Status;
-import com.scrumboard.app.task.Task;
 
 import java.util.Date;
 

@@ -34,7 +34,6 @@ public class SessionAuthorizationFilter extends BasicAuthenticationFilter {
         else{
             chain.doFilter(request, response);
         }
-
     }
 
     private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
