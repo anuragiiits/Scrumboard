@@ -35,7 +35,7 @@ public class ApplicationUserController {
         return userService.addUser(applicationUser);
     }
 
-    @GetMapping("logout")
+    @GetMapping("/logout")
     public ResponseEntity<String> logout(){
         return userService.logout();
     }
