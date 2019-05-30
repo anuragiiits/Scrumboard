@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.transaction.Transactional;
 
 @RestController
-@CrossOrigin
 @RequestMapping("/user")
 @Transactional(rollbackOn = Exception.class)
 public class TaskController {
