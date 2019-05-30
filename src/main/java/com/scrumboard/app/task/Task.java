@@ -28,8 +28,12 @@ public class Task {
      */
 
     @ManyToOne
-    @JoinColumn(name="user_id", nullable=false, updatable=false)
+    @JoinColumn(nullable=false, updatable=false)
     private ApplicationUser createdBy;
+
+    @ManyToOne
+    @JoinColumn(nullable=false)
+    private ApplicationUser createdFor;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
@@ -49,7 +53,7 @@ public class Task {
         this.status = status;
     }
 
-    public Task(Long id, String title, String description, Status status, Date createdAt, Date updatedAt, ApplicationUser createdBy) {
+    public Task(Long id, String title, String description, Status status, Date createdAt, Date updatedAt, ApplicationUser createdBy, ApplicationUser createdFor) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -57,6 +61,7 @@ public class Task {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.createdBy = createdBy;
+        this.createdFor = createdFor;
     }
 
     public Long getId() {
@@ -115,4 +120,11 @@ public class Task {
         this.createdBy = createdBy;
     }
 
+    public ApplicationUser getCreatedFor() {
+        return createdFor;
+    }
+
+    public void setCreatedFor(ApplicationUser createdFor) {
+        this.createdFor = createdFor;
+    }
 }

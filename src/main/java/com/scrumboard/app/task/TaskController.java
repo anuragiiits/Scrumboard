@@ -1,5 +1,6 @@
 package com.scrumboard.app.task;
 
+import com.scrumboard.app.exception.BadRequestException;
 import com.scrumboard.app.task.pojo.request.TaskFilterRequest;
 import com.scrumboard.app.task.pojo.request.TaskRequest;
 import com.scrumboard.app.task.pojo.response.TaskResponse;
@@ -33,8 +34,13 @@ public class TaskController {
 */
 
     @GetMapping("/tasks")
-    public TaskStatusResponse getAllTask(){
-        return taskService.getUserStatusTask();
+    public TaskStatusResponse getCreatedForTask(){
+        return taskService.getCreatedForTask();
+    }
+
+    @GetMapping("/other-tasks")
+    public TaskStatusResponse getCreatedByTaskForOthers(){
+        return taskService.getCreatedByTaskForOthers();
     }
 
     @GetMapping("/tasks/{id}")
@@ -46,7 +52,11 @@ public class TaskController {
     public ResponseEntity<TaskResponse> addTask(@RequestBody TaskRequest taskRequest) {
 
         if(Strings.isEmpty(taskRequest.getTitle()) && Strings.isEmpty(taskRequest.getDescription())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            throw new BadRequestException("Title and Description cannot be empty");
+        }
+
+        if(taskRequest.getStatus() == null){
+            throw new BadRequestException("Status cannot be empty");
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(taskService.addTask(taskRequest));
@@ -60,8 +70,13 @@ public class TaskController {
     @PutMapping("/tasks/{id}")
     public ResponseEntity<TaskResponse> updateTask(@PathVariable("id") Long taskId, @RequestBody TaskRequest taskRequest){
 
-        if(Strings.isEmpty(taskRequest.getTitle()) && Strings.isEmpty(taskRequest.getDescription()))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        if(Strings.isEmpty(taskRequest.getTitle()) && Strings.isEmpty(taskRequest.getDescription())) {
+            throw new BadRequestException("Title and Description cannot be empty.");
+        }
+
+        if(taskRequest.getStatus() == null){
+            throw new BadRequestException("Status cannot be empty");
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(taskService.updateTask(taskId, taskRequest));
     }

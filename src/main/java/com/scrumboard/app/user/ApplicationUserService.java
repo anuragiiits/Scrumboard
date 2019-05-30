@@ -1,6 +1,7 @@
 package com.scrumboard.app.user;
 
 
+import com.scrumboard.app.exception.BadRequestException;
 import com.scrumboard.app.exception.ResourceNotFoundException;
 import com.scrumboard.app.session.SessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,8 @@ public class ApplicationUserService implements IApplicationUserService, UserDeta
 
         Optional<ApplicationUser> existingUser = applicationUserRepository.findByUsername(user.getUsername());
         if(existingUser.isPresent()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            throw new BadRequestException("Username already taken.");
         }
 
         applicationUserRepository.save(user);
@@ -53,15 +55,12 @@ public class ApplicationUserService implements IApplicationUserService, UserDeta
         return applicationUserRepository.findByUsername(username);
     }
 
-    public ResponseEntity<String> logout(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    public ResponseEntity<String> logout(String token){
 
-        applicationUserRepository.findByUsername(auth.getName()).map(user -> {
-             return sessionRepository.findByCreatedBy(user).map(session -> {
-                session.setStatus(false);
-                return sessionRepository.save(session);
+        sessionRepository.findByToken(token).map(session -> {
+                     session.setStatus(false);
+                     return sessionRepository.save(session);
             });
-        }).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }

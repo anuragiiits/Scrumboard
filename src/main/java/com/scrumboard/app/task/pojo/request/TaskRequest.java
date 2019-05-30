@@ -7,6 +7,7 @@ public class TaskRequest {
     private String title;
     private String description;
     private Status status;
+    private String createdFor;
 
     public String getTitle() {
         return title;
@@ -30,5 +31,13 @@ public class TaskRequest {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public String getCreatedFor() {
+        return createdFor;
+    }
+
+    public void setCreatedFor(String createdFor) {
+        this.createdFor = createdFor;
     }
 }

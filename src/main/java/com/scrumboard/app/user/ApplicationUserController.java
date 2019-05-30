@@ -36,7 +36,7 @@ public class ApplicationUserController {
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<String> logout(){
-        return userService.logout();
+    public ResponseEntity<String> logout(@RequestHeader("access_token") String token){
+        return userService.logout(token);
     }
 }
