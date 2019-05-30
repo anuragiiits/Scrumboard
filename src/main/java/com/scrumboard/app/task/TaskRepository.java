@@ -10,5 +10,6 @@ import java.util.List;
 @Transactional
 public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByCreatedByUsername(String username);
-    List<Task> findByCreatedByUsernameAndStatusIn(String username, List<Status> statusList);
+    List<Task> findByCreatedForUsername(String username);
+    List<Task> findByCreatedForUsernameAndStatusIn(String username, List<Status> statusList);
 }

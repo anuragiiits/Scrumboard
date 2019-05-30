@@ -14,6 +14,7 @@ public interface ITaskService {
     void deleteTask(Long id);
     Task getTask(Long id);
     List<TaskResponse> getUserTask();
-    TaskStatusResponse getUserStatusTask();
+    TaskStatusResponse getCreatedForTask();
+    TaskStatusResponse getCreatedByTaskForOthers();
     TaskStatusResponse getFilteredUserTask(TaskFilterRequest taskFilterRequest);
 }

@@ -64,7 +64,6 @@ public class SessionAuthenticationFilter extends UsernamePasswordAuthenticationF
                                             HttpServletResponse res,
                                             FilterChain chain,
                                             Authentication auth) throws IOException, ServletException {
-
         String token = UUID.randomUUID().toString();
         Session session = new Session();
         session.setToken(token);
@@ -73,6 +72,7 @@ public class SessionAuthenticationFilter extends UsernamePasswordAuthenticationF
         session.setExpiryDate();
         sessionService.createSession(session);
 
+        res.addHeader("Access-Control-Expose-Headers", HEADER_STRING);
         res.addHeader(HEADER_STRING, token);
     }
 }
