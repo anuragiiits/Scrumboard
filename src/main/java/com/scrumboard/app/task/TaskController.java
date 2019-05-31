@@ -3,6 +3,7 @@ package com.scrumboard.app.task;
 import com.scrumboard.app.exception.BadRequestException;
 import com.scrumboard.app.task.pojo.request.TaskFilterRequest;
 import com.scrumboard.app.task.pojo.request.TaskRequest;
+import com.scrumboard.app.task.pojo.request.TaskTitleFilterRequest;
 import com.scrumboard.app.task.pojo.response.TaskResponse;
 import com.scrumboard.app.task.pojo.response.TaskStatusResponse;
 import org.apache.logging.log4j.util.Strings;
@@ -62,9 +63,19 @@ public class TaskController {
         return ResponseEntity.status(HttpStatus.OK).body(taskService.addTask(taskRequest));
     }
 
-    @PostMapping("/task-filter")
+    @PostMapping("/task-filter/status")
     public TaskStatusResponse getFilteredTask(@RequestBody TaskFilterRequest taskFilterRequest) {
         return taskService.getFilteredUserTask(taskFilterRequest);
+    }
+
+    @PostMapping("/task-filter/title")
+    public TaskStatusResponse getTaskByTitleFilter(@RequestBody TaskTitleFilterRequest taskTitleFilterRequest){
+
+        if(Strings.isEmpty(taskTitleFilterRequest.getTitle())){
+            throw new BadRequestException("Title cannot be empty.");
+        }
+
+        return taskService.getFilteredTitleTask(taskTitleFilterRequest);
     }
 
     @PutMapping("/tasks/{id}")

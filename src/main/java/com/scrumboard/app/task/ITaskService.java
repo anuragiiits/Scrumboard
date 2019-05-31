@@ -3,6 +3,7 @@ package com.scrumboard.app.task;
 
 import com.scrumboard.app.task.pojo.request.TaskFilterRequest;
 import com.scrumboard.app.task.pojo.request.TaskRequest;
+import com.scrumboard.app.task.pojo.request.TaskTitleFilterRequest;
 import com.scrumboard.app.task.pojo.response.TaskResponse;
 import com.scrumboard.app.task.pojo.response.TaskStatusResponse;
 
@@ -17,4 +18,5 @@ public interface ITaskService {
     TaskStatusResponse getCreatedForTask();
     TaskStatusResponse getCreatedByTaskForOthers();
     TaskStatusResponse getFilteredUserTask(TaskFilterRequest taskFilterRequest);
+    TaskStatusResponse getFilteredTitleTask(TaskTitleFilterRequest taskTitleFilterRequest);
 }

@@ -5,6 +5,7 @@ import com.scrumboard.app.exception.BadRequestException;
 import com.scrumboard.app.exception.ResourceNotFoundException;
 import com.scrumboard.app.task.pojo.request.TaskFilterRequest;
 import com.scrumboard.app.task.pojo.request.TaskRequest;
+import com.scrumboard.app.task.pojo.request.TaskTitleFilterRequest;
 import com.scrumboard.app.task.pojo.response.TaskResponse;
 import com.scrumboard.app.task.pojo.response.TaskStatusResponse;
 import com.scrumboard.app.user.ApplicationUser;
@@ -170,7 +171,7 @@ public class TaskService implements ITaskService {
         ApplicationUser createdFor = getApplicationUser(taskRequest);
 
         return applicationUserRepository.findByUsername(auth.getName()).map(user -> {
-            Task task = new Task(taskRequest.getTitle(), taskRequest.getDescription(), taskRequest.getStatus());
+            Task task = new Task(taskRequest.getTitle().trim(), taskRequest.getDescription().trim(), taskRequest.getStatus());
             task.setCreatedBy(user);
             task.setCreatedFor(createdFor == null ? user : createdFor);
             task = taskRepository.save(task);
@@ -190,8 +191,8 @@ public class TaskService implements ITaskService {
 
         return taskRepository.findById(taskId).map(originalTask -> {
             if(user.isPresent() && (user.get().getId().equals(originalTask.getCreatedBy().getId()) || user.get().getId().equals(originalTask.getCreatedFor().getId()))){
-                originalTask.setTitle(taskRequest.getTitle());
-                originalTask.setDescription(taskRequest.getDescription());
+                originalTask.setTitle(taskRequest.getTitle().trim());
+                originalTask.setDescription(taskRequest.getDescription().trim());
                 originalTask.setStatus(taskRequest.getStatus());
 
                 originalTask = taskRepository.save(originalTask);
@@ -200,6 +201,60 @@ public class TaskService implements ITaskService {
             }
             else throw new AccessDeniedException("User is not allowed");
         }).orElseThrow(() -> new ResourceNotFoundException("TaskId " + taskId + " not found"));
+    }
+
+    /**
+     * A utility function to check if secondString is a substring of firstString
+     * @return true or false
+     */
+    public static boolean containsIgnoreCase(String firstString, String secondString) {
+        final int length = secondString.length();
+        if (length == 0)
+            return true; // Empty string is contained
+
+        final char firstLo = Character.toLowerCase(secondString.charAt(0));
+        final char firstUp = Character.toUpperCase(secondString.charAt(0));
+
+        for (int i = firstString.length() - length; i >= 0; i--) {
+            // Quick check before calling the more expensive regionMatches() method:
+            final char ch = firstString.charAt(i);
+            if (ch != firstLo && ch != firstUp)
+                continue;
+
+            if (firstString.regionMatches(true, i, secondString, 0, length))
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Retrieves all filtered CreatedFor tasks based on the Task title provided as Input
+     * @return Status category-wise lists of filtered-tasks
+     */
+    public TaskStatusResponse getFilteredTitleTask(TaskTitleFilterRequest taskTitleFilterRequest){
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        TaskStatusResponse taskStatusResponse = new TaskStatusResponse();
+        ApplicationUser user = applicationUserRepository.findByUsername(auth.getName()).get();
+        user.getTasksFor()
+                .forEach((task) -> {
+                    if(containsIgnoreCase(task.getTitle(), taskTitleFilterRequest.getTitle())) {
+//                        if(task.getTitle().toLowerCase().contains(taskTitleFilterRequest.getTitle().toLowerCase())) {
+                        if (task.getStatus() == Status.PENDING)
+                            taskStatusResponse.addPendingTask(mapper.map(task, TaskResponse.class));
+                        if (task.getStatus() == Status.DEVELOPMENT)
+                            taskStatusResponse.addDevelopmentTask(mapper.map(task, TaskResponse.class));
+                        if (task.getStatus() == Status.TESTING)
+                            taskStatusResponse.addTestingTask(mapper.map(task, TaskResponse.class));
+                        if (task.getStatus() == Status.PRODUCTION)
+                            taskStatusResponse.addProductionTask(mapper.map(task, TaskResponse.class));
+                        if (task.getStatus() == Status.REJECTED)
+                            taskStatusResponse.addRejectedTask(mapper.map(task, TaskResponse.class));
+                    }
+                });
+
+        return taskStatusResponse;
     }
 
     /**
