@@ -9,7 +9,7 @@ import com.scrumboard.app.task.pojo.request.TaskTitleFilterRequest;
 import com.scrumboard.app.task.pojo.response.TaskResponse;
 import com.scrumboard.app.task.pojo.response.TaskStatusResponse;
 import com.scrumboard.app.user.ApplicationUser;
-import com.scrumboard.app.user.ApplicationUserRepository;
+import com.scrumboard.app.user.IApplicationUserService;
 import org.apache.logging.log4j.util.Strings;
 import org.dozer.Mapper;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class TaskService implements ITaskService {
     @Autowired
     private TaskRepository taskRepository;
     @Autowired
-    private ApplicationUserRepository applicationUserRepository;
+    private IApplicationUserService applicationUserService;
     @Autowired
     private Mapper mapper;
 
@@ -44,7 +44,7 @@ public class TaskService implements ITaskService {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         List<TaskResponse> tasksResponse = new ArrayList<>();
-        applicationUserRepository.findByUsername(auth.getName()).get().getTasksBy()
+        applicationUserService.findByUsername(auth.getName()).get().getTasksBy()
                 .forEach((task) -> tasksResponse.add(mapper.map(task, TaskResponse.class)));
 
         return tasksResponse;
@@ -58,7 +58,7 @@ public class TaskService implements ITaskService {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         TaskStatusResponse taskStatusResponse = new TaskStatusResponse();
-        applicationUserRepository.findByUsername(auth.getName()).get().getTasksFor()
+        applicationUserService.findByUsername(auth.getName()).get().getTasksFor()
                 .forEach((task) -> {
                     if(task.getStatus() == Status.PENDING)
                         taskStatusResponse.addPendingTask(mapper.map(task, TaskResponse.class));
@@ -83,7 +83,7 @@ public class TaskService implements ITaskService {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         TaskStatusResponse taskStatusResponse = new TaskStatusResponse();
-        ApplicationUser user = applicationUserRepository.findByUsername(auth.getName()).get();
+        ApplicationUser user = applicationUserService.findByUsername(auth.getName()).get();
         user.getTasksBy()
                 .forEach((task) -> {
                     if(!task.getCreatedFor().getId().equals(user.getId())) {
@@ -135,7 +135,7 @@ public class TaskService implements ITaskService {
 
         Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("TaskId " + id + " not found"));
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Optional<ApplicationUser> user = applicationUserRepository.findByUsername(auth.getName());
+        Optional<ApplicationUser> user = applicationUserService.findByUsername(auth.getName());
 
         if(user.isPresent() && (user.get().getId().equals(task.getCreatedBy().getId()) || user.get().getId().equals(task.getCreatedFor().getId()))){
             return task;
@@ -150,7 +150,7 @@ public class TaskService implements ITaskService {
     private ApplicationUser getApplicationUser(TaskRequest taskRequest) {
 
         if(Strings.isNotEmpty(taskRequest.getCreatedFor())){
-            Optional<ApplicationUser> userOptional = applicationUserRepository.findByUsername(taskRequest.getCreatedFor());
+            Optional<ApplicationUser> userOptional = applicationUserService.findByUsername(taskRequest.getCreatedFor());
             if (userOptional.isPresent()) {
                 return userOptional.get();
             }
@@ -170,7 +170,7 @@ public class TaskService implements ITaskService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         ApplicationUser createdFor = getApplicationUser(taskRequest);
 
-        return applicationUserRepository.findByUsername(auth.getName()).map(user -> {
+        return applicationUserService.findByUsername(auth.getName()).map(user -> {
             Task task = new Task(taskRequest.getTitle().trim(), taskRequest.getDescription().trim(), taskRequest.getStatus());
             task.setCreatedBy(user);
             task.setCreatedFor(createdFor == null ? user : createdFor);
@@ -187,7 +187,7 @@ public class TaskService implements ITaskService {
     public TaskResponse updateTask(Long taskId, TaskRequest taskRequest) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Optional<ApplicationUser> user = applicationUserRepository.findByUsername(auth.getName());
+        Optional<ApplicationUser> user = applicationUserService.findByUsername(auth.getName());
 
         return taskRepository.findById(taskId).map(originalTask -> {
             if(user.isPresent() && (user.get().getId().equals(originalTask.getCreatedBy().getId()) || user.get().getId().equals(originalTask.getCreatedFor().getId()))){
@@ -207,7 +207,7 @@ public class TaskService implements ITaskService {
      * A utility function to check if secondString is a substring of firstString
      * @return true or false
      */
-    public static boolean containsIgnoreCase(String firstString, String secondString) {
+    private static boolean containsIgnoreCase(String firstString, String secondString) {
         final int length = secondString.length();
         if (length == 0)
             return true; // Empty string is contained
@@ -236,11 +236,10 @@ public class TaskService implements ITaskService {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         TaskStatusResponse taskStatusResponse = new TaskStatusResponse();
-        ApplicationUser user = applicationUserRepository.findByUsername(auth.getName()).get();
+        ApplicationUser user = applicationUserService.findByUsername(auth.getName()).get();
         user.getTasksFor()
                 .forEach((task) -> {
                     if(containsIgnoreCase(task.getTitle(), taskTitleFilterRequest.getTitle())) {
-//                        if(task.getTitle().toLowerCase().contains(taskTitleFilterRequest.getTitle().toLowerCase())) {
                         if (task.getStatus() == Status.PENDING)
                             taskStatusResponse.addPendingTask(mapper.map(task, TaskResponse.class));
                         if (task.getStatus() == Status.DEVELOPMENT)

@@ -72,7 +72,8 @@ public class TaskController {
     public TaskStatusResponse getTaskByTitleFilter(@RequestBody TaskTitleFilterRequest taskTitleFilterRequest){
 
         if(Strings.isEmpty(taskTitleFilterRequest.getTitle())){
-            throw new BadRequestException("Title cannot be empty.");
+            taskService.getCreatedForTask();
+//            throw new BadRequestException("Title cannot be empty.");
         }
 
         return taskService.getFilteredTitleTask(taskTitleFilterRequest);

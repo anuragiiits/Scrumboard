@@ -2,13 +2,10 @@ package com.scrumboard.app.user;
 
 
 import com.scrumboard.app.exception.BadRequestException;
-import com.scrumboard.app.exception.ResourceNotFoundException;
 import com.scrumboard.app.session.SessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -31,7 +28,6 @@ public class ApplicationUserService implements IApplicationUserService, UserDeta
 
         Optional<ApplicationUser> existingUser = applicationUserRepository.findByUsername(user.getUsername());
         if(existingUser.isPresent()) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
             throw new BadRequestException("Username already taken.");
         }
 

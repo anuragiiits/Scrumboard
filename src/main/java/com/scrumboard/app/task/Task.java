@@ -17,7 +17,7 @@ public class Task {
     private String title;
     private String description;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.ORDINAL)           //change it into String
     private Status status;
 
     /**
